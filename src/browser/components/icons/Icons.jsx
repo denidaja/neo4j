@@ -215,6 +215,33 @@ export const BinIcon = props => (
   />
 )
 
+export const TrashItemIcon = props => (
+  <IconContainer
+    activeStyle={styles.active}
+    inactiveStyle={styles.inactive}
+    {...props}
+    className='sl-bin'
+  />
+)
+
+export const EditItemIcon = props => (
+  <IconContainer
+    activeStyle={styles.active}
+    inactiveStyle={styles.inactive}
+    {...props}
+    className='sl-pencil-circle'
+  />
+)
+
+export const AddItemIcon = props => (
+  <IconContainer
+    activeStyle={styles.active}
+    inactiveStyle={styles.inactive}
+    {...props}
+    className='sl-add-circle'
+  />
+)
+
 export const ExpandIcon = () => <IconContainer className='sl-scale-spread' />
 export const ContractIcon = () => <IconContainer className='sl-scale-reduce' />
 export const RefreshIcon = () => <IconContainer className='sl-loop' />

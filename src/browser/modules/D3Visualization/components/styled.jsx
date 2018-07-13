@@ -245,7 +245,9 @@ export const StyledTokenRelationshipType = styled(StyledToken)`
   border-radius: 3px;
 `
 
-export const tokenPropertyKey = styled(StyledToken)`padding: 3px 5px 3px 5px;`
+export const tokenPropertyKey = styled(StyledToken)`
+  padding: 3px 5px 3px 5px;
+`
 export const StyledTokenContextMenuKey = styled(StyledLabelToken)`
   color: #f9fbfd;
   background-color: #d2d5da;
@@ -253,7 +255,9 @@ export const StyledTokenContextMenuKey = styled(StyledLabelToken)`
   padding: 4px 9px;
 `
 
-export const StyledTokenCount = styled.span`font-weight: normal;`
+export const StyledTokenCount = styled.span`
+  font-weight: normal;
+`
 export const StyledLegendContents = styled.ul`
   float: left;
   line-height: 1em;
@@ -339,7 +343,9 @@ export const StyledFullSizeContainer = styled.div`
   height: 100%;
 `
 
-export const StyledInspectorFooterStatusMessage = styled.div`font-weight: bold;`
+export const StyledInspectorFooterStatusMessage = styled.div`
+  font-weight: bold;
+`
 
 export const StyledZoomHolder = styled.div`
   position: absolute;
@@ -361,6 +367,42 @@ export const StyledZoomButton = styled.button`
   background: transparent;
   border-color: black;
   padding: 2px 6px 3px;
+  &:hover {
+    color: black;
+  }
+  &:focus {
+    outline: none;
+  }
+  &.faded {
+    opacity: 0.3;
+    cursor: auto;
+    &:hover {
+      color: #9b9da2;
+    }
+  }
+`
+
+export const StyledEditHolder = styled.div`
+  position: absolute;
+  bottom: 36px;
+  left: 0;
+  padding: 3px;
+  border-right: #e6e9ef solid 1px;
+  border-top: #e6e9ef solid 1px;
+  background: #fff;
+`
+
+export const StyledEditButton = styled.button`
+  display: list-item;
+  list-style-type: none;
+  float: left;
+  font-size: 1.5em;
+  margin-bottom: 8px;
+  border: none;
+  color: #9b9da2;
+  background: transparent;
+  border-color: black;
+  padding: 8px;
   &:hover {
     color: black;
   }

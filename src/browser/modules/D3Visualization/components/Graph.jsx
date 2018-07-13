@@ -29,8 +29,20 @@ import {
 import { GraphEventHandler } from '../GraphEventHandler'
 import '../lib/visualization/index'
 import { dim } from 'browser-styles/constants'
-import { StyledZoomHolder, StyledSvgWrapper, StyledZoomButton } from './styled'
-import { ZoomInIcon, ZoomOutIcon } from 'browser-components/icons/Icons'
+import {
+  StyledZoomHolder,
+  StyledEditHolder,
+  StyledEditButton,
+  StyledSvgWrapper,
+  StyledZoomButton
+} from './styled'
+import {
+  ZoomInIcon,
+  ZoomOutIcon,
+  TrashItemIcon,
+  AddItemIcon,
+  EditItemIcon
+} from 'browser-components/icons/Icons'
 
 export class GraphComponent extends Component {
   constructor (props) {
@@ -59,6 +71,20 @@ export class GraphComponent extends Component {
       zoomInLimitReached: limits.zoomInLimit,
       zoomOutLimitReached: limits.zoomOutLimit
     })
+  }
+
+  trashItemClicked (el) {
+    const item = this.props.selectedItem
+    console.log('TODO: Trash ', item)
+  }
+
+  editItemClicked (el) {
+    const item = this.props.selectedItem
+    console.log('TODO: Edit ', item)
+  }
+
+  addItemClicked (el) {
+    console.log('TODO Add item')
   }
 
   getVisualAreaHeight () {
@@ -185,11 +211,45 @@ export class GraphComponent extends Component {
     return null
   }
 
+  editButton () {
+    const item = this.props.selectedItem
+    const hasType = !!item
+    const isCanvas = hasType && item['type'] === 'canvas'
+    const isNode = hasType && item['type'] === 'node'
+    const isRelationship = hasType && item['type'] === 'relationship'
+
+    return (
+      <StyledEditHolder>
+        <StyledEditButton
+          className={hasType && !isCanvas ? 'bin' : 'faded bin'}
+          onClick={this.trashItemClicked.bind(this)}
+        >
+          <TrashItemIcon />
+        </StyledEditButton>
+        <StyledEditButton
+          className={
+            isNode || isRelationship ? 'pencil-circle' : 'faded pencil-circle'
+          }
+          onClick={this.editItemClicked.bind(this)}
+        >
+          <EditItemIcon />
+        </StyledEditButton>
+        <StyledEditButton
+          className={!hasType || isCanvas ? 'add-circle' : 'faded add-circle'}
+          onClick={this.addItemClicked.bind(this)}
+        >
+          <AddItemIcon />
+        </StyledEditButton>
+      </StyledEditHolder>
+    )
+  }
+
   render () {
     return (
       <StyledSvgWrapper>
         <svg className='neod3viz' ref={this.graphInit.bind(this)} />
         {this.zoomButtons()}
+        {this.editButton()}
       </StyledSvgWrapper>
     )
   }

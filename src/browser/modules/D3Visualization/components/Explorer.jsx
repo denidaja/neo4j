@@ -26,6 +26,8 @@ import { InspectorComponent } from './Inspector'
 import { LegendComponent } from './Legend'
 import { StyledFullSizeContainer } from './styled'
 
+import { withBus } from 'react-suber'
+
 const deduplicateNodes = nodes => {
   return nodes.reduce(
     (all, curr) => {
@@ -41,7 +43,7 @@ const deduplicateNodes = nodes => {
   ).nodes
 }
 
-export class ExplorerComponent extends Component {
+class ExplorerComponent extends Component {
   constructor (props) {
     super(props)
     const graphStyle = neoGraphStyle()
@@ -55,9 +57,9 @@ export class ExplorerComponent extends Component {
       })
       selectedItem = {
         type: 'status-item',
-        item: `Not all return nodes are being displayed due to Initial Node Display setting. Only ${this
-          .props
-          .initialNodeDisplay} of ${nodes.length} nodes are being displayed`
+        item: `Not all return nodes are being displayed due to Initial Node Display setting. Only ${
+          this.props.initialNodeDisplay
+        } of ${nodes.length} nodes are being displayed`
       }
     }
     if (this.props.graphStyleData) {
@@ -86,8 +88,9 @@ export class ExplorerComponent extends Component {
           this.setState({
             selectedItem: {
               type: 'status-item',
-              item: `Rendering was limited to ${this.props
-                .maxNeighbours} of the node's total ${result.count +
+              item: `Rendering was limited to ${
+                this.props.maxNeighbours
+              } of the node's total ${result.count +
                 currentNeighbours.length} neighbours due to browser config maxNeighbours.`
             }
           })
@@ -223,6 +226,7 @@ export class ExplorerComponent extends Component {
           assignVisElement={this.props.assignVisElement}
           getAutoCompleteCallback={this.props.getAutoCompleteCallback}
           setGraph={this.props.setGraph}
+          selectedItem={this.state.selectedItem}
         />
         <InspectorComponent
           fullscreen={this.props.fullscreen}
@@ -235,4 +239,5 @@ export class ExplorerComponent extends Component {
     )
   }
 }
+export const ExplorerComponentWithBus = withBus(ExplorerComponent)
 export const Explorer = ExplorerComponent
