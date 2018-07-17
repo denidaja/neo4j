@@ -38,6 +38,7 @@ import {
 } from './styled'
 import {
   AddItemIcon,
+  ConnectItemIcon,
   EditItemIcon,
   TrashItemIcon,
   ZoomInIcon,
@@ -49,7 +50,8 @@ export class GraphComponent extends Component {
     super(props)
     this.state = {
       zoomInLimitReached: true,
-      zoomOutLimitReached: false
+      zoomOutLimitReached: false,
+      connectionSourceItem: null
     }
   }
 
@@ -73,21 +75,57 @@ export class GraphComponent extends Component {
     })
   }
 
-  trashItemClicked (el) {
+  trashItemClicked () {
     const item = this.props.selectedItem
-    this.props.deleteItem(item)
-    this.graphEH.nodeClose(item)
+
+    this.props.deleteItem(item).then(item => {
+      if (item.type === 'relationship') {
+        const relationship = this.graph.findRelationship(item.item.id)
+        this.graph.removeRelationship(relationship)
+        this.graphEH.propagateChange()
+      } else {
+        this.graphEH.nodeClose(item)
+      }
+    })
   }
 
-  editItemClicked (el) {
+  editItemClicked () {
     const item = this.props.selectedItem
     console.log('TODO: Edit ', item)
   }
 
-  addItemClicked (el) {
-    this.props.addItem({
-      type: 'node'
-    })
+  connectItemClicked () {
+    const targetItem = this.props.selectedItem
+
+    if (!this.state.connectionSourceItem) {
+      this.setState({ connectionSourceItem: targetItem })
+    } else {
+      this.setState({ connectionSourceItem: null })
+    }
+  }
+
+  addItemClicked () {
+    this.props.addItem({ type: 'node' }).then(this.merge.bind(this))
+  }
+
+  onItemSelect (item) {
+    this.props.onItemSelect(item)
+
+    if (this.state.connectionSourceItem) {
+      this.props
+        .connectItems(this.state.connectionSourceItem, item)
+        .then(this.merge.bind(this))
+        .then(() => this.setState({ connectionSourceItem: null }))
+
+      this.setState({ connectionSourceItem: null })
+    }
+  }
+
+  merge (graph) {
+    this.graph.addNodes(mapNodes(graph.nodes))
+    this.graph.addRelationships(
+      mapRelationships(graph.relationships, this.graph)
+    )
   }
 
   getVisualAreaHeight () {
@@ -132,7 +170,7 @@ export class GraphComponent extends Component {
         this.graphView,
         this.props.getNodeNeighbours,
         this.props.onItemMouseOver,
-        this.props.onItemSelect,
+        this.onItemSelect.bind(this),
         this.props.onGraphModelChange
       )
       this.graphEH.bindEventHandlers()
@@ -220,26 +258,49 @@ export class GraphComponent extends Component {
     const isCanvas = hasType && item['type'] === 'canvas'
     const isNode = hasType && item['type'] === 'node'
     const isRelationship = hasType && item['type'] === 'relationship'
+    const isInLinkMode = !!this.state.connectionSourceItem
 
     return (
       <StyledEditHolder>
         <StyledEditButton
-          className={hasType && !isCanvas ? 'bin' : 'faded bin'}
-          onClick={this.trashItemClicked.bind(this)}
+          className={
+            !isInLinkMode && hasType && !isCanvas ? 'bin' : 'faded bin'
+          }
+          onClick={() =>
+            !isInLinkMode && hasType && !isCanvas && this.trashItemClicked()
+          }
         >
           <TrashItemIcon />
         </StyledEditButton>
         <StyledEditButton
           className={
-            isNode || isRelationship ? 'pencil-circle' : 'faded pencil-circle'
+            !isInLinkMode && (isNode || isRelationship)
+              ? 'pencil-circle'
+              : 'faded pencil-circle'
           }
-          onClick={this.editItemClicked.bind(this)}
+          onClick={() =>
+            !isInLinkMode &&
+            (isNode || isRelationship) &&
+            this.editItemClicked()
+          }
         >
           <EditItemIcon />
         </StyledEditButton>
         <StyledEditButton
-          className={!hasType || isCanvas ? 'add-circle' : 'faded add-circle'}
-          onClick={this.addItemClicked.bind(this)}
+          className={isNode ? 'link' : 'faded link'}
+          onClick={() => isNode && this.connectItemClicked()}
+        >
+          <ConnectItemIcon />
+        </StyledEditButton>
+        <StyledEditButton
+          className={
+            !isInLinkMode && (!hasType || isCanvas)
+              ? 'add-circle'
+              : 'faded add-circle'
+          }
+          onClick={() =>
+            !isInLinkMode && (!hasType || isCanvas) && this.addItemClicked()
+          }
         >
           <AddItemIcon />
         </StyledEditButton>

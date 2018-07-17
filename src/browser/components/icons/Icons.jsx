@@ -233,6 +233,15 @@ export const EditItemIcon = props => (
   />
 )
 
+export const ConnectItemIcon = props => (
+  <IconContainer
+    activeStyle={styles.active}
+    inactiveStyle={styles.inactive}
+    {...props}
+    className='sl-link'
+  />
+)
+
 export const AddItemIcon = props => (
   <IconContainer
     activeStyle={styles.active}

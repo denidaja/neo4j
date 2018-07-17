@@ -125,11 +125,76 @@ export class Visualization extends Component {
   }
 
   deleteItem (item) {
-    console.log(item)
+    let query = ''
+
+    if (item.type === 'node') {
+      query = `MATCH (node)
+               WHERE id(node) = ${item.item.id}
+               OPTIONAL MATCH (node)-[rel]-()
+               DELETE node, rel`
+    } else {
+      query = `MATCH ()-[rel]-()
+               WHERE id(rel) = ${item.item.id}
+               DELETE rel`
+    }
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(CYPHER_REQUEST, { query: query }, response => {
+          if (!response.success) {
+            reject(new Error())
+          } else {
+            resolve(item)
+          }
+        })
+    })
   }
 
-  addItem (item) {
-    console.log(item)
+  addItem () {
+    const query = `CREATE (n:Unlabeled)
+                   RETURN n`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(CYPHER_REQUEST, { query: query }, response => {
+          if (!response.success) {
+            reject(new Error())
+          } else {
+            const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+              response.result.records,
+              false
+            )
+            this.autoCompleteRelationships(this.graph._nodes, resultGraph.nodes)
+            resolve({ ...resultGraph, count: 1 })
+          }
+        })
+    })
+  }
+
+  connectItems (source, target) {
+    const query = `MATCH (source)
+                   MATCH (target)
+                   WHERE id(source) = ${source.item.id} AND id(target) = ${
+  target.item.id
+}
+                   CREATE (source)-[:untyped]->(target)
+                   RETURN source, target`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(CYPHER_REQUEST, { query: query }, response => {
+          if (!response.success) {
+            reject(new Error())
+          } else {
+            const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+              response.result.records,
+              false
+            )
+            this.autoCompleteRelationships(this.graph._nodes, resultGraph.nodes)
+            resolve({ ...resultGraph, count: 1 })
+          }
+        })
+    })
   }
 
   getInternalRelationships (existingNodeIds, newNodeIds) {
@@ -175,6 +240,7 @@ export class Visualization extends Component {
           getNeighbours={this.getNeighbours.bind(this)}
           deleteItem={this.deleteItem.bind(this)}
           addItem={this.addItem.bind(this)}
+          connectItems={this.connectItems.bind(this)}
           nodes={this.state.nodesAndRelationships.nodes}
           relationships={this.state.nodesAndRelationships.relationships}
           fullscreen={this.props.fullscreen}

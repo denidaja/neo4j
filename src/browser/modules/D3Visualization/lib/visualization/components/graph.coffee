@@ -86,6 +86,12 @@ class neo.models.Graph
       delete @relationshipMap[r.id]
     @
 
+  removeRelationship: (relationship) =>
+    @updateNode relationship.source
+    @updateNode relationship.target
+    @_relationships.splice(@_relationships.indexOf(relationship), 1)
+    delete @relationshipMap[relationship.id]
+
   addRelationships: (relationships) =>
     for relationship in relationships
       existingRelationship = @findRelationship(relationship.id)
