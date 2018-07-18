@@ -44,6 +44,19 @@ import {
   ZoomInIcon,
   ZoomOutIcon
 } from 'browser-components/icons/Icons'
+import {
+  StyledConnectButton,
+  StyledEditFormHolder
+} from 'src-root/browser/modules/D3Visualization/components/styled'
+import { StyledDrawer } from 'src-root/browser/components/TabNavigation/styled'
+import { FormButton } from 'src-root/browser/components/buttons'
+import {
+  Drawer,
+  DrawerBody,
+  DrawerSection,
+  DrawerSectionBody,
+  DrawerSubHeader
+} from 'src-root/browser/components/drawer'
 
 export class GraphComponent extends Component {
   constructor (props) {
@@ -286,12 +299,13 @@ export class GraphComponent extends Component {
         >
           <EditItemIcon />
         </StyledEditButton>
-        <StyledEditButton
+        <StyledConnectButton
           className={isNode ? 'link' : 'faded link'}
           onClick={() => isNode && this.connectItemClicked()}
+          active={isInLinkMode}
         >
           <ConnectItemIcon />
-        </StyledEditButton>
+        </StyledConnectButton>
         <StyledEditButton
           className={
             !isInLinkMode && (!hasType || isCanvas)
@@ -308,12 +322,40 @@ export class GraphComponent extends Component {
     )
   }
 
+  editForm () {
+    return (
+      <StyledEditFormHolder>
+        <Drawer theme='blue'>
+          <DrawerBody>
+            <DrawerSection>
+              <DrawerSubHeader>Edit Element</DrawerSubHeader>
+              <DrawerSectionBody>
+                <DrawerSection>Type</DrawerSection>
+                <FormButton
+                  label={'delete'}
+                  onClick={() => alert('ok')}
+                  buttonType='drawer'
+                />
+                <p>&nbsp;</p>
+                <FormButton
+                  label='save'
+                  onClick={() => alert('ok')}
+                  buttonType='drawer'
+                />
+              </DrawerSectionBody>
+            </DrawerSection>
+          </DrawerBody>
+        </Drawer>
+      </StyledEditFormHolder>
+    )
+  }
+
   render () {
     return (
       <StyledSvgWrapper>
         <svg className='neod3viz' ref={this.graphInit.bind(this)} />
-        {this.zoomButtons()}
         {this.editButton()}
+        {this.zoomButtons()}
       </StyledSvgWrapper>
     )
   }

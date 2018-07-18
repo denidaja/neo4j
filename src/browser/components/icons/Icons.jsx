@@ -224,14 +224,23 @@ export const TrashItemIcon = props => (
   />
 )
 
-export const EditItemIcon = props => (
-  <IconContainer
-    activeStyle={styles.active}
-    inactiveStyle={styles.inactive}
-    {...props}
-    className='sl-pencil-circle'
-  />
-)
+export const EditItemIcon = props => {
+  return props.checked ? (
+    <IconContainer
+      activeStyle={styles.active}
+      inactiveStyle={styles.inactive}
+      {...props}
+      className='sl-pencil-circle'
+    />
+  ) : (
+    <IconContainer
+      activeStyle={styles.active}
+      inactiveStyle={styles.inactive}
+      {...props}
+      className='sl-pencil-circle'
+    />
+  )
+}
 
 export const ConnectItemIcon = props => (
   <IconContainer
