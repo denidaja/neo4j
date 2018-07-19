@@ -392,15 +392,6 @@ export const StyledEditHolder = styled.div`
   background: #fff;
 `
 
-export const StyledEditFormHolder = styled.div`
-  position: absolute;
-  bottom: 39px;
-  left: 0px;
-  top: 32px;
-  right: 0px;
-  background: #ffffffaa;
-`
-
 export const StyledEditButton = styled.button`
   display: list-item;
   list-style-type: none;
@@ -428,11 +419,6 @@ export const StyledEditButton = styled.button`
 `
 
 export const StyledConnectButton = styled(StyledEditButton)`
-  background-color: ${props =>
-    !props.active ? 'transparent' : props.theme.editorBarBackground};
-`
-
-export const StyledEditModeButton = styled(StyledEditButton)`
   background-color: ${props =>
     !props.active ? 'transparent' : props.theme.editorBarBackground};
 `

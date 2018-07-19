@@ -46,17 +46,8 @@ import {
 } from 'browser-components/icons/Icons'
 import {
   StyledConnectButton,
-  StyledEditFormHolder,
   StyledEditModeButton
 } from 'src-root/browser/modules/D3Visualization/components/styled'
-import { FormButton } from 'src-root/browser/components/buttons'
-import {
-  Drawer,
-  DrawerBody,
-  DrawerSection,
-  DrawerSectionBody,
-  DrawerSubHeader
-} from 'src-root/browser/components/drawer'
 
 export class GraphComponent extends Component {
   constructor (props) {
@@ -271,39 +262,23 @@ export class GraphComponent extends Component {
     const hasType = !!item
     const isCanvas = hasType && item['type'] === 'canvas'
     const isNode = hasType && item['type'] === 'node'
-    const isRelationship = hasType && item['type'] === 'relationship'
     const isInLinkMode = !!this.state.connectionSourceItem
-    const isInEditMode = this.state.isInEditMode
-    const isInAnyMode = isInLinkMode || isInEditMode
 
     return (
       <StyledEditHolder>
         <StyledEditButton
-          className={!isInAnyMode && hasType && !isCanvas ? 'bin' : 'faded bin'}
+          className={
+            !isInLinkMode && hasType && !isCanvas ? 'bin' : 'faded bin'
+          }
           onClick={() =>
-            !isInAnyMode && hasType && !isCanvas && this.trashItemClicked()
+            !isInLinkMode && hasType && !isCanvas && this.trashItemClicked()
           }
         >
           <TrashItemIcon />
         </StyledEditButton>
-        <StyledEditModeButton
-          className={
-            !isInLinkMode && (isNode || isRelationship)
-              ? 'pencil-circle'
-              : 'faded pencil-circle'
-          }
-          onClick={() =>
-            !isInLinkMode &&
-            (isNode || isRelationship) &&
-            this.editItemClicked()
-          }
-          active={isInEditMode}
-        >
-          <EditItemIcon />
-        </StyledEditModeButton>
         <StyledConnectButton
-          className={!isInEditMode && isNode ? 'link' : 'faded link'}
-          onClick={() => !isInEditMode && isNode && this.connectItemClicked()}
+          className={isNode ? 'link' : 'faded link'}
+          onClick={() => isNode && this.connectItemClicked()}
           active={isInLinkMode}
         >
           <ConnectItemIcon />
@@ -321,34 +296,6 @@ export class GraphComponent extends Component {
           <AddItemIcon />
         </StyledEditButton>
       </StyledEditHolder>
-    )
-  }
-
-  editForm () {
-    return (
-      <StyledEditFormHolder>
-        <Drawer theme='blue'>
-          <DrawerBody>
-            <DrawerSection>
-              <DrawerSubHeader>Edit Element</DrawerSubHeader>
-              <DrawerSectionBody>
-                <DrawerSection>Type</DrawerSection>
-                <FormButton
-                  label={'delete'}
-                  onClick={() => alert('ok')}
-                  buttonType='drawer'
-                />
-                <p>&nbsp;</p>
-                <FormButton
-                  label='save'
-                  onClick={() => alert('ok')}
-                  buttonType='drawer'
-                />
-              </DrawerSectionBody>
-            </DrawerSection>
-          </DrawerBody>
-        </Drawer>
-      </StyledEditFormHolder>
     )
   }
 
