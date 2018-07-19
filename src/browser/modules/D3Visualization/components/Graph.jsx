@@ -46,9 +46,9 @@ import {
 } from 'browser-components/icons/Icons'
 import {
   StyledConnectButton,
-  StyledEditFormHolder
+  StyledEditFormHolder,
+  StyledEditModeButton
 } from 'src-root/browser/modules/D3Visualization/components/styled'
-import { StyledDrawer } from 'src-root/browser/components/TabNavigation/styled'
 import { FormButton } from 'src-root/browser/components/buttons'
 import {
   Drawer,
@@ -64,7 +64,8 @@ export class GraphComponent extends Component {
     this.state = {
       zoomInLimitReached: true,
       zoomOutLimitReached: false,
-      connectionSourceItem: null
+      connectionSourceItem: null,
+      isInEditMode: false
     }
   }
 
@@ -104,7 +105,7 @@ export class GraphComponent extends Component {
 
   editItemClicked () {
     const item = this.props.selectedItem
-    console.log('TODO: Edit ', item)
+    this.setState({ isInEditMode: !this.state.isInEditMode })
   }
 
   connectItemClicked () {
@@ -272,20 +273,20 @@ export class GraphComponent extends Component {
     const isNode = hasType && item['type'] === 'node'
     const isRelationship = hasType && item['type'] === 'relationship'
     const isInLinkMode = !!this.state.connectionSourceItem
+    const isInEditMode = this.state.isInEditMode
+    const isInAnyMode = isInLinkMode || isInEditMode
 
     return (
       <StyledEditHolder>
         <StyledEditButton
-          className={
-            !isInLinkMode && hasType && !isCanvas ? 'bin' : 'faded bin'
-          }
+          className={!isInAnyMode && hasType && !isCanvas ? 'bin' : 'faded bin'}
           onClick={() =>
-            !isInLinkMode && hasType && !isCanvas && this.trashItemClicked()
+            !isInAnyMode && hasType && !isCanvas && this.trashItemClicked()
           }
         >
           <TrashItemIcon />
         </StyledEditButton>
-        <StyledEditButton
+        <StyledEditModeButton
           className={
             !isInLinkMode && (isNode || isRelationship)
               ? 'pencil-circle'
@@ -296,12 +297,13 @@ export class GraphComponent extends Component {
             (isNode || isRelationship) &&
             this.editItemClicked()
           }
+          active={isInEditMode}
         >
           <EditItemIcon />
-        </StyledEditButton>
+        </StyledEditModeButton>
         <StyledConnectButton
-          className={isNode ? 'link' : 'faded link'}
-          onClick={() => isNode && this.connectItemClicked()}
+          className={!isInEditMode && isNode ? 'link' : 'faded link'}
+          onClick={() => !isInEditMode && isNode && this.connectItemClicked()}
           active={isInLinkMode}
         >
           <ConnectItemIcon />

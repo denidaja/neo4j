@@ -431,3 +431,8 @@ export const StyledConnectButton = styled(StyledEditButton)`
   background-color: ${props =>
     !props.active ? 'transparent' : props.theme.editorBarBackground};
 `
+
+export const StyledEditModeButton = styled(StyledEditButton)`
+  background-color: ${props =>
+    !props.active ? 'transparent' : props.theme.editorBarBackground};
+`
