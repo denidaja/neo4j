@@ -37,9 +37,9 @@ import {
 } from './styled'
 import { GrassEditor } from './GrassEditor'
 import { RowExpandToggleComponent } from './RowExpandToggle'
-import { AddItemIcon, PlusIcon } from 'src-root/browser/components/icons/Icons'
+import { AddItemIcon } from 'src-root/browser/components/icons/Icons'
 
-const mapItemProperties = itemProperties =>
+const mapItemProperties = (itemProperties, onEditProperty) =>
   itemProperties
     .sort(
       ({ key: keyA }, { key: keyB }) =>
@@ -57,6 +57,7 @@ const mapItemProperties = itemProperties =>
         <StyledInspectorFooterRowListValue
           className='value'
           title={'Click to edit ' + prop.key}
+          onClick={() => onEditProperty(prop.key, prop.value)}
         >
           {optionalToString(prop.value)}
         </StyledInspectorFooterRowListValue>
@@ -168,7 +169,7 @@ export class InspectorComponent extends Component {
             {mapLabels(this.state.graphStyle, item.labels)}
             <StyledLabelToken
               className={'token token-label'}
-              title={'Click to add a new label'}
+              title={'Click to add label'}
               style={{ verticalAlign: 'middle' }}
             >
               <AddItemIcon />
@@ -181,14 +182,15 @@ export class InspectorComponent extends Component {
                 {item.id}
               </StyledInspectorFooterRowListValue>
             </StyledInspectorFooterRowListPair>
-            {mapItemProperties(item.properties)}
             <StyledLabelToken
               className={'token token-label'}
-              title={'Click to add a new property'}
+              title={'Click to add property'}
               style={{ verticalAlign: 'middle' }}
+              onClick={this.props.onAddProperty}
             >
               <AddItemIcon />
             </StyledLabelToken>
+            {mapItemProperties(item.properties, this.props.onEditProperty)}
           </StyledInlineList>
         )
       } else if (type === 'relationship') {
@@ -219,14 +221,15 @@ export class InspectorComponent extends Component {
                 {item.id}
               </StyledInspectorFooterRowListValue>
             </StyledInspectorFooterRowListPair>
-            {mapItemProperties(item.properties)}
             <StyledLabelToken
               className={'token token-label'}
               title={'Click to add a new property'}
               style={{ verticalAlign: 'middle' }}
+              onClick={this.props.onAddProperty}
             >
               <AddItemIcon />
             </StyledLabelToken>
+            {mapItemProperties(item.properties, this.props.onEditProperty)}
           </StyledInlineList>
         )
       }

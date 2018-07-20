@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class neo.models.Relationship
   constructor: (@id, @source, @target, @type, properties) ->
+    @setProperties properties
+
+  setProperties: (properties) ->
     @propertyMap = properties
     @propertyList = for own key,value of @propertyMap
       { key: key, value: value }

@@ -39,15 +39,11 @@ import {
 import {
   AddItemIcon,
   ConnectItemIcon,
-  EditItemIcon,
   TrashItemIcon,
   ZoomInIcon,
   ZoomOutIcon
 } from 'browser-components/icons/Icons'
-import {
-  StyledConnectButton,
-  StyledEditModeButton
-} from 'src-root/browser/modules/D3Visualization/components/styled'
+import { StyledConnectButton } from 'src-root/browser/modules/D3Visualization/components/styled'
 
 export class GraphComponent extends Component {
   constructor (props) {
@@ -94,11 +90,6 @@ export class GraphComponent extends Component {
     })
   }
 
-  editItemClicked () {
-    const item = this.props.selectedItem
-    this.setState({ isInEditMode: !this.state.isInEditMode })
-  }
-
   connectItemClicked () {
     const targetItem = this.props.selectedItem
 
@@ -110,7 +101,7 @@ export class GraphComponent extends Component {
   }
 
   addItemClicked () {
-    this.props.addItem({ type: 'node' }).then(this.merge.bind(this))
+    this.props.addItem({ type: 'node' }).then(this.addPartialGraph.bind(this))
   }
 
   onItemSelect (item) {
@@ -119,18 +110,30 @@ export class GraphComponent extends Component {
     if (this.state.connectionSourceItem) {
       this.props
         .connectItems(this.state.connectionSourceItem, item)
-        .then(this.merge.bind(this))
+        .then(this.addPartialGraph.bind(this))
         .then(() => this.setState({ connectionSourceItem: null }))
 
       this.setState({ connectionSourceItem: null })
     }
   }
 
-  merge (graph) {
+  addPartialGraph (graph) {
     this.graph.addNodes(mapNodes(graph.nodes))
     this.graph.addRelationships(
       mapRelationships(graph.relationships, this.graph)
     )
+  }
+
+  updateGraph (graph) {
+    for (const update of graph.nodes) {
+      const node = this.graph.findNode(update.id)
+      node.setProperties(update.properties)
+    }
+
+    for (const update of graph.relationships) {
+      const relationship = this.graph.findRelationship(update.id)
+      relationship.setProperties(update.properties)
+    }
   }
 
   getVisualAreaHeight () {

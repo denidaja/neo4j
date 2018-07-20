@@ -32,7 +32,19 @@ const StyledSettingTextInput = styled.input`
   width: 192px;
 `
 
-const StyledCheckbox = styled.input`margin-right: 10px;`
+const StyledTextarea = styled.textarea`
+  color: #555;
+  font-size: 14px;
+  padding: 6px 12px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 192px;
+`
+
+const StyledCheckbox = styled.input`
+  margin-right: 10px;
+`
 const StyledLabel = styled.label`
   margin-left: 10px;
   display: inline-block;
@@ -40,11 +52,18 @@ const StyledLabel = styled.label`
     text-transform: uppercase;
   }
 `
-const StyledRadioEntry = styled.div`margin: 10px 0;`
+const StyledRadioEntry = styled.div`
+  margin: 10px 0;
+`
 
 export const TextInput = props => {
   const { children, ...rest } = props
   return <StyledSettingTextInput {...rest}>{children}</StyledSettingTextInput>
+}
+
+export const Textarea = props => {
+  const { children, ...rest } = props
+  return <StyledTextarea {...rest}>{children}</StyledTextarea>
 }
 
 export const CheckboxSelector = props => {

@@ -19,6 +19,9 @@
  */
 
 import styled from 'styled-components'
+import React from 'react'
+
+import { FormButton } from 'src-root/browser/components/buttons'
 
 export const legendRowHeight = 32
 export const inspectorFooterContractedHeight = 22
@@ -392,6 +395,45 @@ export const StyledEditHolder = styled.div`
   background: #fff;
 `
 
+export const StyledModalFormHolder = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 0;
+  background: #ffffffcc;
+  z-index: 10;
+  padding: 10px;
+`
+
+export const StyledModalFormBody = styled.div`
+  position: absolute;
+  left: 50%;
+  width: 300px;
+  margin: 0 -150px;
+`
+
+export const StyledModalFormWrapper = styled.div`
+  position: relative;
+  top: 10%;
+`
+
+export const EditFormButton = styled(FormButton)`
+  background-color: #888;
+  color: #ffffff;
+  margin-left: 8px;
+  float: right;
+  &:hover {
+    background-color: ${props => props.theme.formButtonBackgroundHover};
+    color: #797979;
+  }
+  &:disabled {
+    opacity: 0.5;
+    background-color: #888;
+    color: #ffffff;
+  }
+`
+
 export const StyledEditButton = styled.button`
   display: list-item;
   list-style-type: none;
@@ -422,3 +464,33 @@ export const StyledConnectButton = styled(StyledEditButton)`
   background-color: ${props =>
     !props.active ? 'transparent' : props.theme.editorBarBackground};
 `
+
+export const FormElements = styled.div`
+  padding-bottom: 10px;
+`
+
+export const FormElement = styled.div`
+  margin-top: 15px;
+  text-align: right;
+`
+
+export const FormHeader = styled.h4`
+  color: ${props => props.theme.primaryText};
+  font-size: 18px;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+  font-family: ${props => props.theme.drawerHeaderFontFamily};
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+`
+
+export const FormLabel = styled.span`
+  color: ${props => props.theme.primaryText};
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  font-family: ${props => props.theme.drawerHeaderFontFamily};
+  padding-right: 20px;
+  vertical-align: top;
+`
+
+export const FormValue = styled.span``

@@ -22,6 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class neo.models.Node
   constructor: (@id, @labels, properties) ->
+    @setProperties properties
+
+  setProperties: (properties) ->
     @propertyMap = properties
     @propertyList = for own key,value of properties
         { key: key, value: value }
