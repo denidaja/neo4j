@@ -119,6 +119,7 @@ export class GraphComponent extends Component {
     this.graph.addRelationships(
       mapRelationships(graph.relationships, this.graph)
     )
+    this.graphEH.graphModelChanged()
   }
 
   deleteRelationship (item) {
@@ -134,6 +135,7 @@ export class GraphComponent extends Component {
     for (const update of graph.nodes) {
       const node = this.graph.findNode(update.id)
       node.setProperties(update.properties)
+      node.labels = update.labels
     }
 
     for (const update of graph.relationships) {
@@ -146,6 +148,8 @@ export class GraphComponent extends Component {
     } else {
       this.graphEH.onRelationshipClicked(lastSelection)
     }
+
+    this.graphEH.graphModelChanged()
   }
 
   getVisualAreaHeight () {
