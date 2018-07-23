@@ -105,6 +105,7 @@ export class EditPropertyForm extends EditForm {
               name='key'
               defaultValue={this.props.values.key}
               onChange={this.handleChange.bind(this)}
+              autoFocus
             />
           </FormValue>
         </FormElement>
@@ -149,6 +150,7 @@ export class EditRelationshipTypeForm extends EditForm {
               name='relationshipType'
               defaultValue={this.props.values.relationshipType}
               onChange={this.handleChange.bind(this)}
+              autoFocus
             />
           </FormValue>
         </FormElement>
@@ -177,7 +179,11 @@ export class AddNodeLabelForm extends EditForm {
         <FormElement>
           <FormLabel>Label</FormLabel>
           <FormValue>
-            <TextInput name='label' onChange={this.handleChange.bind(this)} />
+            <TextInput
+              name='label'
+              onChange={this.handleChange.bind(this)}
+              autoFocus
+            />
           </FormValue>
         </FormElement>
       </FormElements>
