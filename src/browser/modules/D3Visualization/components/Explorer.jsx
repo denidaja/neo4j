@@ -201,6 +201,14 @@ class ExplorerComponent extends Component {
     })
   }
 
+  onRemoveProperty (key) {
+    const graph = this.graphComponent.current
+
+    this.props
+      .removeItemProperty(this.state.selectedItem, key)
+      .then(graph.updateGraph.bind(graph))
+  }
+
   setPropertyOnSelectedItem (data) {
     const graph = this.graphComponent.current
 
@@ -301,6 +309,7 @@ class ExplorerComponent extends Component {
           onExpandToggled={this.onInspectorExpandToggled.bind(this)}
           onAddProperty={this.onAddProperty.bind(this)}
           onEditProperty={this.onEditProperty.bind(this)}
+          onRemoveProperty={this.onRemoveProperty.bind(this)}
         />
         {this.state.showForm && this.modalForm()}
       </StyledFullSizeContainer>
