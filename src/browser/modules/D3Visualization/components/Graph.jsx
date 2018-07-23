@@ -119,6 +119,15 @@ export class GraphComponent extends Component {
     this.graph.addRelationships(
       mapRelationships(graph.relationships, this.graph)
     )
+
+    if (graph.relationships.length === 1 && graph.nodes.length === 2) {
+      this.graphEH.onRelationshipClicked(
+        this.graph.findRelationship(graph.relationships[0].id)
+      )
+    } else if (graph.nodes.length === 1) {
+      this.graphEH.nodeClicked(this.graph.findNode(graph.nodes[0].id))
+    }
+
     this.graphEH.graphModelChanged()
   }
 

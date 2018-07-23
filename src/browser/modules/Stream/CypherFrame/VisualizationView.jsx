@@ -313,8 +313,8 @@ export class Visualization extends Component {
                    WHERE id(source) = ${source.item.id} AND id(target) = ${
   target.item.id
 }
-                   CREATE (source)-[:untyped]->(target)
-                   RETURN source, target`
+                   CREATE (source)-[rel:untyped]->(target)
+                   RETURN source, rel, target`
 
     return new Promise((resolve, reject) => {
       this.props.bus &&
