@@ -65,7 +65,7 @@ const mapItemProperties = (itemProperties, onEditProperty, onRemoveProperty) =>
       </StyledInspectorFooterRowListPair>
     ))
 
-const mapLabels = (graphStyle, itemLabels) => {
+const mapLabels = (graphStyle, itemLabels, onRemoveLabel) => {
   return itemLabels.map((label, i) => {
     const graphStyleForLabel = graphStyle.forNode({ labels: [label] })
     const style = {
@@ -79,6 +79,7 @@ const mapLabels = (graphStyle, itemLabels) => {
         style={style}
         className={'token' + ' ' + 'token-label'}
         title={'Click to remove label ' + label}
+        onClick={() => onRemoveLabel(label)}
       >
         {label}
       </StyledLabelToken>
@@ -167,11 +168,16 @@ export class InspectorComponent extends Component {
       } else if (type === 'node') {
         inspectorContent = (
           <StyledInlineList className='list-inline'>
-            {mapLabels(this.state.graphStyle, item.labels)}
+            {mapLabels(
+              this.state.graphStyle,
+              item.labels,
+              this.props.onRemoveLabel
+            )}
             <StyledLabelToken
               className={'token token-label'}
               title={'Click to add label'}
               style={{ verticalAlign: 'middle' }}
+              onClick={this.props.onAddLabel}
             >
               <AddItemIcon />
             </StyledLabelToken>

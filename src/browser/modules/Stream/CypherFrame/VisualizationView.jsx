@@ -261,6 +261,52 @@ export class Visualization extends Component {
     })
   }
 
+  addNodeLabel (item, label) {
+    const query = `MATCH (node)
+                   WHERE id(node) = ${item.item.id}
+                   SET node:\`${label}\`
+                   RETURN node`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(CYPHER_REQUEST, { query: query }, response => {
+          if (!response.success) {
+            reject(new Error())
+          } else {
+            const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+              response.result.records,
+              false
+            )
+            this.autoCompleteRelationships(this.graph._nodes, resultGraph.nodes)
+            resolve({ ...resultGraph, count: 1 })
+          }
+        })
+    })
+  }
+
+  removeNodeLabel (item, label) {
+    const query = `MATCH (node)
+                   WHERE id(node) = ${item.item.id}
+                   REMOVE node:\`${label}\`
+                   RETURN node`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(CYPHER_REQUEST, { query: query }, response => {
+          if (!response.success) {
+            reject(new Error())
+          } else {
+            const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+              response.result.records,
+              false
+            )
+            this.autoCompleteRelationships(this.graph._nodes, resultGraph.nodes)
+            resolve({ ...resultGraph, count: 1 })
+          }
+        })
+    })
+  }
+
   connectItems (source, target) {
     const query = `MATCH (source)
                    MATCH (target)
@@ -333,6 +379,8 @@ export class Visualization extends Component {
           setItemProperty={this.setItemProperty.bind(this)}
           removeItemProperty={this.removeItemProperty.bind(this)}
           setRelationshipType={this.setRelationshipType.bind(this)}
+          addNodeLabel={this.addNodeLabel.bind(this)}
+          removeNodeLabel={this.removeNodeLabel.bind(this)}
           connectItems={this.connectItems.bind(this)}
           nodes={this.state.nodesAndRelationships.nodes}
           relationships={this.state.nodesAndRelationships.relationships}

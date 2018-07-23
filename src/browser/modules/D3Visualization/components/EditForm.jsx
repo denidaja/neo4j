@@ -156,3 +156,31 @@ export class EditRelationshipTypeForm extends EditForm {
     )
   }
 }
+
+export class AddNodeLabelForm extends EditForm {
+  constructor (props) {
+    super(props)
+    this.result = {
+      label: ''
+    }
+  }
+
+  isValid () {
+    return this.result.label.match(this.KEY_CONVENTION)
+  }
+
+  formElements () {
+    return (
+      <FormElements>
+        <FormHeader>Add Label</FormHeader>
+
+        <FormElement>
+          <FormLabel>Label</FormLabel>
+          <FormValue>
+            <TextInput name='label' onChange={this.handleChange.bind(this)} />
+          </FormValue>
+        </FormElement>
+      </FormElements>
+    )
+  }
+}
