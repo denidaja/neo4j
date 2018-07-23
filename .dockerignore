@@ -1,0 +1,12 @@
+__mocks__/
+.git/
+.github/
+.idea/
+auth_server/
+cypress/
+dist/
+e2e_tests/
+node_modules/
+scripts/
+.gitignore/
+*.iml
