@@ -124,3 +124,35 @@ export class EditPropertyForm extends EditForm {
     )
   }
 }
+
+export class EditRelationshipTypeForm extends EditForm {
+  constructor (props) {
+    super(props)
+    this.result = {
+      relationshipType: props.values.relationshipType || ''
+    }
+  }
+
+  isValid () {
+    return this.result.relationshipType.match(this.KEY_CONVENTION)
+  }
+
+  formElements () {
+    return (
+      <FormElements>
+        <FormHeader>Edit Type</FormHeader>
+
+        <FormElement>
+          <FormLabel>Type</FormLabel>
+          <FormValue>
+            <TextInput
+              name='relationshipType'
+              defaultValue={this.props.values.relationshipType}
+              onChange={this.handleChange.bind(this)}
+            />
+          </FormValue>
+        </FormElement>
+      </FormElements>
+    )
+  }
+}

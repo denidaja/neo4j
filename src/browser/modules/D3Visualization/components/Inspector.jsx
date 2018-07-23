@@ -215,6 +215,7 @@ export class InspectorComponent extends Component {
               style={style}
               className={'token' + ' ' + 'token-relationship-type'}
               title={'Click to change type'}
+              onClick={() => this.props.onEditRelationshipType(item.type)}
             >
               {item.type}
             </StyledTokenRelationshipType>

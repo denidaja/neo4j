@@ -235,6 +235,32 @@ export class Visualization extends Component {
     })
   }
 
+  setRelationshipType (item, type) {
+    const query = `MATCH (n)-[old]->(m)
+                   WHERE id(old) = ${item.item.id}
+                   CREATE (n)-[new:${type}]->(m)
+                   SET new = old
+                   WITH old, new
+                   DELETE old
+                   RETURN new, old`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(CYPHER_REQUEST, { query: query }, response => {
+          if (!response.success) {
+            reject(new Error())
+          } else {
+            const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+              response.result.records,
+              false
+            )
+            this.autoCompleteRelationships(this.graph._nodes, resultGraph.nodes)
+            resolve({ ...resultGraph, count: 1 })
+          }
+        })
+    })
+  }
+
   connectItems (source, target) {
     const query = `MATCH (source)
                    MATCH (target)
@@ -306,6 +332,7 @@ export class Visualization extends Component {
           addItem={this.addItem.bind(this)}
           setItemProperty={this.setItemProperty.bind(this)}
           removeItemProperty={this.removeItemProperty.bind(this)}
+          setRelationshipType={this.setRelationshipType.bind(this)}
           connectItems={this.connectItems.bind(this)}
           nodes={this.state.nodesAndRelationships.nodes}
           relationships={this.state.nodesAndRelationships.relationships}
