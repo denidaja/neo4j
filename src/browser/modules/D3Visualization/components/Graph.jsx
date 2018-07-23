@@ -51,8 +51,7 @@ export class GraphComponent extends Component {
     this.state = {
       zoomInLimitReached: true,
       zoomOutLimitReached: false,
-      connectionSourceItem: null,
-      isInEditMode: false
+      connectionSourceItem: null
     }
   }
 
@@ -129,6 +128,9 @@ export class GraphComponent extends Component {
   }
 
   updateGraph (graph) {
+    const lastSelection = this.graphEH.selectedItem
+    this.graphEH.deselectItem()
+
     for (const update of graph.nodes) {
       const node = this.graph.findNode(update.id)
       node.setProperties(update.properties)
@@ -137,6 +139,12 @@ export class GraphComponent extends Component {
     for (const update of graph.relationships) {
       const relationship = this.graph.findRelationship(update.id)
       relationship.setProperties(update.properties)
+    }
+
+    if (lastSelection && 'labels' in lastSelection) {
+      this.graphEH.nodeClicked(lastSelection)
+    } else {
+      this.graphEH.onRelationshipClicked(lastSelection)
     }
   }
 
