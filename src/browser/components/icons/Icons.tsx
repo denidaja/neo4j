@@ -444,3 +444,15 @@ export const CannyFeedbackIcon = (): JSX.Element => (
 export const CannyNotificationsIcon = (): JSX.Element => (
   <IconContainer icon={cannyNotifications} />
 )
+
+export const TrashItemIcon = (props: any) => (
+  <IconContainer {...props} className="sl-bin" />
+)
+
+export const ConnectItemIcon = (props: any) => (
+  <IconContainer {...props} className="sl-link" />
+)
+
+export const AddItemIcon = (props: any) => (
+  <IconContainer {...props} className="sl-add-circle" />
+)

@@ -19,15 +19,42 @@
  */
 
 import React, { Component } from 'react'
-import { createGraph, mapRelationships, getGraphStats } from '../mapper'
-import { GraphEventHandler } from '../GraphEventHandler'
-import '../lib/visualization/index'
 import { dim } from 'browser-styles/constants'
-import { StyledZoomHolder, StyledSvgWrapper, StyledZoomButton } from './styled'
-import { ZoomInIcon, ZoomOutIcon } from 'browser-components/icons/Icons'
 import graphView from '../lib/visualization/components/graphView'
 
+import { deepEquals } from 'services/utils'
+import {
+  createGraph,
+  getGraphStats,
+  mapNodes,
+  mapRelationships
+} from '../mapper'
+import { GraphEventHandler } from '../GraphEventHandler'
+import '../lib/visualization/index'
+import {
+  StyledEditButton,
+  StyledEditHolder,
+  StyledSvgWrapper,
+  StyledZoomButton,
+  StyledZoomHolder,
+  StyledConnectButton
+} from './styled'
+import {
+  AddItemIcon,
+  ConnectItemIcon,
+  TrashItemIcon,
+  ZoomInIcon,
+  ZoomOutIcon
+} from 'browser-components/icons/Icons'
+import { optionalToString } from 'services/utils'
+
 type State = any
+
+const mapProperties = (_: any) =>
+  Object.assign(
+    {},
+    ...Object.keys(_).map(k => ({ [k]: optionalToString(_[k]) }))
+  )
 
 export class GraphComponent extends Component<any, State> {
   graph: any
@@ -36,7 +63,8 @@ export class GraphComponent extends Component<any, State> {
   svgElement: any
   state = {
     zoomInLimitReached: true,
-    zoomOutLimitReached: false
+    zoomOutLimitReached: false,
+    connectionSourceItem: null
   }
 
   graphInit(el: any) {
@@ -57,6 +85,104 @@ export class GraphComponent extends Component<any, State> {
       zoomInLimitReached: limits.zoomInLimit,
       zoomOutLimitReached: limits.zoomOutLimit
     })
+  }
+
+  trashItemClicked() {
+    const item = this.props.selectedItem
+
+    this.props.deleteItem(item).then((item: any) => {
+      if (item.type === 'relationship') {
+        this.deleteRelationship(item.item)
+      } else {
+        this.graphEH.nodeClose(item)
+      }
+    })
+  }
+
+  connectItemClicked() {
+    const targetItem = this.props.selectedItem
+
+    if (!this.state.connectionSourceItem) {
+      this.setState({ connectionSourceItem: targetItem })
+    } else {
+      this.setState({ connectionSourceItem: null })
+    }
+  }
+
+  addItemClicked() {
+    this.props.addItem({ type: 'node' }).then(this.addPartialGraph.bind(this))
+  }
+
+  onItemSelect(item: any) {
+    this.props.onItemSelect(item)
+
+    if (this.state.connectionSourceItem) {
+      this.props
+        .connectItems(this.state.connectionSourceItem, item)
+        .then(this.addPartialGraph.bind(this))
+        .then(() => this.setState({ connectionSourceItem: null }))
+
+      this.setState({ connectionSourceItem: null })
+    }
+  }
+
+  addPartialGraph(graph: any) {
+    this.graph.addNodes(mapNodes(graph.nodes))
+    this.graph.addRelationships(
+      mapRelationships(graph.relationships, this.graph)
+    )
+
+    if (graph.relationships.length === 1 && graph.nodes.length === 2) {
+      this.graphEH.onRelationshipClicked(
+        this.graph.findRelationship(graph.relationships[0].id)
+      )
+    } else if (graph.nodes.length === 1) {
+      this.graphEH.nodeClicked(this.graph.findNode(graph.nodes[0].id))
+    }
+
+    this.graphEH.graphModelChanged()
+  }
+
+  deleteRelationship(item: any) {
+    const relationship = this.graph.findRelationship(item.id)
+    this.graph.removeRelationship(relationship)
+    this.graphEH.propagateChange()
+  }
+
+  updateGraph(graph: any) {
+    const lastSelection = this.graphEH.selectedItem
+    this.graphEH.deselectItem()
+
+    for (const update of graph.nodes) {
+      const node = this.graph.findNode(update.id)
+
+      node.propertyMap = mapProperties(update.properties)
+      node.propertyList = [
+        ...Object.keys(update.properties).map(k => ({
+          key: k,
+          value: update.properties[k]
+        }))
+      ]
+      node.labels = update.labels
+    }
+
+    for (const update of graph.relationships) {
+      const relationship = this.graph.findRelationship(update.id)
+      relationship.propertyList = [
+        ...Object.keys(update.properties).map(k => ({
+          key: k,
+          value: update.properties[k]
+        }))
+      ]
+    }
+
+    if (lastSelection && 'labels' in lastSelection) {
+      this.graphEH.nodeClicked(lastSelection)
+    } else {
+      this.graphEH.onRelationshipClicked(lastSelection)
+    }
+
+    this.graphEH.graphModelChanged()
   }
 
   getVisualAreaHeight() {
@@ -99,7 +225,7 @@ export class GraphComponent extends Component<any, State> {
         this.graphView,
         this.props.getNodeNeighbours,
         this.props.onItemMouseOver,
-        this.props.onItemSelect,
+        this.onItemSelect.bind(this),
         this.props.onGraphModelChange
       )
       this.graphEH.bindEventHandlers()
@@ -155,10 +281,52 @@ export class GraphComponent extends Component<any, State> {
     )
   }
 
+  editButton() {
+    const item = this.props.selectedItem
+    const hasType = !!item
+    const isCanvas = hasType && item['type'] === 'canvas'
+    const isNode = hasType && item['type'] === 'node'
+    const isInLinkMode = !!this.state.connectionSourceItem
+
+    return (
+      <StyledEditHolder>
+        <StyledEditButton
+          className={
+            !isInLinkMode && hasType && !isCanvas ? 'bin' : 'faded bin'
+          }
+          onClick={() =>
+            !isInLinkMode && hasType && !isCanvas && this.trashItemClicked()
+          }
+        >
+          <TrashItemIcon />
+        </StyledEditButton>
+        <StyledConnectButton
+          className={isNode ? 'link' : 'faded link'}
+          onClick={() => isNode && this.connectItemClicked()}
+        >
+          <ConnectItemIcon />
+        </StyledConnectButton>
+        <StyledEditButton
+          className={
+            !isInLinkMode && (!hasType || isCanvas)
+              ? 'add-circle'
+              : 'faded add-circle'
+          }
+          onClick={() =>
+            !isInLinkMode && (!hasType || isCanvas) && this.addItemClicked()
+          }
+        >
+          <AddItemIcon />
+        </StyledEditButton>
+      </StyledEditHolder>
+    )
+  }
+
   render() {
     return (
       <StyledSvgWrapper>
         <svg className="neod3viz" ref={this.graphInit.bind(this)} />
+        {this.editButton()}
         {this.zoomButtons()}
       </StyledSvgWrapper>
     )

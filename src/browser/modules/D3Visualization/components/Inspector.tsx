@@ -42,35 +42,52 @@ import ClickableUrls from '../../../components/ClickableUrls'
 import numberToUSLocale from 'shared/utils/number-to-US-locale'
 import { StyledTruncatedMessage } from 'browser/modules/Stream/styled'
 import { Icon } from 'semantic-ui-react'
+import { AddIcon } from '../../../components/icons/Icons'
 
-const mapItemProperties = (itemProperties: any) =>
+const mapItemProperties = (
+  itemProperties: any,
+  onEditProperty: any,
+  onRemoveProperty: any
+) =>
   itemProperties
     .sort(({ key: keyA }: any, { key: keyB }: any) =>
       keyA < keyB ? -1 : keyA === keyB ? 0 : 1
     )
     .map((prop: any, i: any) => (
       <StyledInspectorFooterRowListPair className="pair" key={'prop' + i}>
-        <StyledInspectorFooterRowListKey className="key">
+        <StyledInspectorFooterRowListKey
+          className="key"
+          title={'Click to remove ' + prop.key}
+          style={{ cursor: 'not-allowed' }}
+          onClick={() => onRemoveProperty(prop.key)}
+        >
           {prop.key + ': '}
         </StyledInspectorFooterRowListKey>
-        <StyledInspectorFooterRowListValue className="value">
-          <ClickableUrls text={optionalToString(prop.value)} />
+        <StyledInspectorFooterRowListValue
+          className="value"
+          title={'Click to edit ' + prop.key}
+          onClick={() => onEditProperty(prop.key, prop.value)}
+        >
+          {optionalToString(prop.value)}
         </StyledInspectorFooterRowListValue>
       </StyledInspectorFooterRowListPair>
     ))
 
-const mapLabels = (graphStyle: any, itemLabels: any) => {
+const mapLabels = (graphStyle: any, itemLabels: any, onRemoveLabel: any) => {
   return itemLabels.map((label: any, i: any) => {
     const graphStyleForLabel = graphStyle.forNode({ labels: [label] })
     const style = {
       backgroundColor: graphStyleForLabel.get('color'),
-      color: graphStyleForLabel.get('text-color-internal')
+      color: graphStyleForLabel.get('text-color-internal'),
+      cursor: 'not-allowed'
     }
     return (
       <StyledLabelToken
         key={'label' + i}
         style={style}
         className={'token' + ' ' + 'token-label'}
+        title={'Click to remove label ' + label}
+        onClick={() => onRemoveLabel(label)}
       >
         {label}
       </StyledLabelToken>
@@ -100,7 +117,7 @@ export class InspectorComponent extends Component<
   }
 
   render() {
-    let item
+    let item: any
     let type
     let inspectorContent
 
@@ -150,9 +167,7 @@ export class InspectorComponent extends Component<
           </StyledInlineList>
         )
       } else if (type === 'canvas') {
-        const description = `Displaying ${numberToUSLocale(
-          item.nodeCount
-        )} nodes, ${numberToUSLocale(item.relationshipCount)} relationships.`
+        const description = `Displaying ${item.nodeCount} nodes, ${item.relationshipCount} relationships.`
         inspectorContent = (
           <StyledInlineList className="list-inline">
             <StyledInspectorFooterRowListPair className="pair" key="pair">
@@ -171,7 +186,19 @@ export class InspectorComponent extends Component<
       } else if (type === 'node') {
         inspectorContent = (
           <StyledInlineList className="list-inline">
-            {mapLabels(this.state.graphStyle, item.labels)}
+            {mapLabels(
+              this.state.graphStyle,
+              item.labels,
+              this.props.onRemoveLabel
+            )}
+            <StyledLabelToken
+              className={'token token-label'}
+              title={'Click to add label'}
+              style={{ verticalAlign: 'middle' }}
+              onClick={this.props.onAddLabel}
+            >
+              <AddIcon />
+            </StyledLabelToken>
             <StyledInspectorFooterRowListPair key="pair" className="pair">
               <StyledInspectorFooterRowListKey className="key">
                 {'<id>:'}
@@ -180,7 +207,19 @@ export class InspectorComponent extends Component<
                 {item.id}
               </StyledInspectorFooterRowListValue>
             </StyledInspectorFooterRowListPair>
-            {mapItemProperties(item.properties)}
+            {mapItemProperties(
+              item.properties,
+              this.props.onEditProperty,
+              this.props.onRemoveProperty
+            )}
+            <StyledLabelToken
+              className={'token token-label'}
+              title={'Click to add property'}
+              style={{ verticalAlign: 'middle' }}
+              onClick={this.props.onAddProperty}
+            >
+              <AddIcon />
+            </StyledLabelToken>
           </StyledInlineList>
         )
       } else if (type === 'relationship') {
@@ -190,7 +229,8 @@ export class InspectorComponent extends Component<
             .get('color'),
           color: this.state.graphStyle
             .forRelationship(item)
-            .get('text-color-internal')
+            .get('text-color-internal'),
+          cursor: 'text'
         }
         inspectorContent = (
           <StyledInlineList className="list-inline">
@@ -198,6 +238,8 @@ export class InspectorComponent extends Component<
               key="token"
               style={style}
               className={'token' + ' ' + 'token-relationship-type'}
+              title={'Click to change type'}
+              onClick={() => this.props.onEditRelationshipType(item.type)}
             >
               {item.type}
             </StyledTokenRelationshipType>
@@ -209,7 +251,19 @@ export class InspectorComponent extends Component<
                 {item.id}
               </StyledInspectorFooterRowListValue>
             </StyledInspectorFooterRowListPair>
-            {mapItemProperties(item.properties)}
+            {mapItemProperties(
+              item.properties,
+              this.props.onEditProperty,
+              this.props.onRemoveProperty
+            )}
+            <StyledLabelToken
+              className={'token token-label'}
+              title={'Click to add a new property'}
+              style={{ verticalAlign: 'middle' }}
+              onClick={this.props.onAddProperty}
+            >
+              <AddIcon />
+            </StyledLabelToken>
           </StyledInlineList>
         )
       }

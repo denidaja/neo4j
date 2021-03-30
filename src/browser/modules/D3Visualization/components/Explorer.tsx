@@ -30,6 +30,13 @@ import { GlobalState } from 'shared/globalState'
 import { getMaxFieldItems } from 'shared/modules/settings/settingsDuck'
 import { connect } from 'react-redux'
 
+import { withBus } from 'react-suber'
+import {
+  EditPropertyForm,
+  EditRelationshipTypeForm,
+  AddNodeLabelForm
+} from './EditForm'
+
 const deduplicateNodes = (nodes: any) => {
   return nodes.reduce(
     (all: any, curr: any) => {
@@ -49,6 +56,8 @@ type ExplorerComponentState = any
 
 export class ExplorerComponent extends Component<any, ExplorerComponentState> {
   defaultStyle: any
+  graphComponent: any
+
   constructor(props: any) {
     super(props)
     const graphStyle = neoGraphStyle()
@@ -74,6 +83,7 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
       graphStyle.loadRules(rebasedStyle)
     }
     this.state = {
+      showForm: false,
       stats: { labels: {}, relTypes: {} },
       graphStyle,
       styleVersion: 0,
@@ -81,6 +91,8 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
       relationships,
       selectedItem
     }
+
+    this.graphComponent = React.createRef()
   }
 
   getNodeNeighbours(node: any, currentNeighbours: any, callback: any) {
@@ -118,6 +130,18 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
 
   onItemSelect(item: any) {
     this.setState({ selectedItem: item })
+  }
+
+  deleteItem(item: any): any {
+    return this.props.deleteItem(item)
+  }
+
+  addItem(item: any): any {
+    return this.props.addItem(item)
+  }
+
+  connectItems(source: any, target: any): any {
+    return this.props.connectItems(source, target)
   }
 
   onGraphModelChange(stats: any) {
@@ -181,6 +205,125 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
     })
   }
 
+  onAddProperty() {
+    this.setState({ showForm: 'addProperty' })
+  }
+
+  onEditProperty(key: any, value: any): any {
+    this.setState({
+      showForm: 'editProperty',
+      propertyKey: key,
+      propertyValue: value
+    })
+  }
+
+  onRemoveProperty(key: any): any {
+    const graph = this.graphComponent.current
+
+    this.props
+      .removeItemProperty(this.state.selectedItem, key)
+      .then(graph.updateGraph.bind(graph))
+  }
+
+  onRemoveLabel(label: any): any {
+    const graph = this.graphComponent.current
+
+    this.props
+      .removeNodeLabel(this.state.selectedItem, label)
+      .then(graph.updateGraph.bind(graph))
+  }
+
+  onEditRelationshipType(type: any): any {
+    this.setState({
+      showForm: 'editRelationshipType',
+      relationshipType: type
+    })
+  }
+
+  onAddLabel(): any {
+    this.setState({ showForm: 'addLabel' })
+  }
+
+  setTypeOnSelectedRelationship(data: any): any {
+    const graph = this.graphComponent.current
+
+    this.props
+      .setRelationshipType(this.state.selectedItem, data.relationshipType)
+      .then((result: any): any => {
+        const old = result.relationships.reverse().shift()
+        graph.addPartialGraph(result)
+        graph.deleteRelationship(old)
+      })
+  }
+
+  setPropertyOnSelectedItem(data: any): any {
+    const graph = this.graphComponent.current
+
+    this.props
+      .setItemProperty(this.state.selectedItem, data.key, data.value)
+      .then(graph.updateGraph.bind(graph))
+  }
+
+  addLabelToSelectedItem(data: any): any {
+    const graph = this.graphComponent.current
+
+    this.props
+      .addNodeLabel(this.state.selectedItem, data.label)
+      .then((result: any): any => {
+        graph.updateGraph(result)
+      })
+  }
+
+  modalForm() {
+    const propertyKey = this.state.propertyKey
+    const propertyValue = this.state.propertyValue
+    const relationshipType = this.state.relationshipType
+
+    switch (this.state.showForm) {
+      case 'addProperty':
+        return (
+          <EditPropertyForm
+            onClose={() => this.setState({ showForm: false })}
+            onSubmit={this.setPropertyOnSelectedItem.bind(this)}
+            values={{ key: '', value: '' }}
+          />
+        )
+
+      case 'editProperty':
+        return (
+          <EditPropertyForm
+            onClose={() => this.setState({ showForm: false })}
+            onSubmit={this.setPropertyOnSelectedItem.bind(this)}
+            values={{ key: propertyKey, value: propertyValue }}
+          />
+        )
+
+      case 'editRelationshipType':
+        return (
+          <EditRelationshipTypeForm
+            onClose={() => this.setState({ showForm: false })}
+            onSubmit={this.setTypeOnSelectedRelationship.bind(this)}
+            values={{ relationshipType: relationshipType }}
+          />
+        )
+
+      case 'addLabel':
+        return (
+          <AddNodeLabelForm
+            onClose={() => this.setState({ showForm: false })}
+            onSubmit={this.addLabelToSelectedItem.bind(this)}
+          />
+        )
+      default:
+        return (
+          <AddNodeLabelForm
+            onClose={() => this.setState({ showForm: false })}
+            onSubmit={this.addLabelToSelectedItem.bind(this)}
+          />
+        )
+    }
+  }
+
   render() {
     // This is a workaround to make the style reset to the same colors as when starting the browser with an empty style
     // If the legend component has the style it will ask the neoGraphStyle object for styling before the graph component,
@@ -229,12 +372,17 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
           getNodeNeighbours={this.getNodeNeighbours.bind(this)}
           onItemMouseOver={this.onItemMouseOver.bind(this)}
           onItemSelect={this.onItemSelect.bind(this)}
+          deleteItem={this.deleteItem.bind(this)}
+          addItem={this.addItem.bind(this)}
+          connectItems={this.connectItems.bind(this)}
           graphStyle={this.state.graphStyle}
           styleVersion={this.state.styleVersion} // cheap way for child to check style updates
           onGraphModelChange={this.onGraphModelChange.bind(this)}
           assignVisElement={this.props.assignVisElement}
           getAutoCompleteCallback={this.props.getAutoCompleteCallback}
           setGraph={this.props.setGraph}
+          selectedItem={this.state.selectedItem}
+          ref={this.graphComponent}
         />
         <InspectorComponent
           hasTruncatedFields={this.props.hasTruncatedFields}
@@ -243,7 +391,14 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
           selectedItem={this.state.selectedItem}
           graphStyle={this.state.graphStyle}
           onExpandToggled={this.onInspectorExpandToggled.bind(this)}
+          onAddProperty={this.onAddProperty.bind(this)}
+          onAddLabel={this.onAddLabel.bind(this)}
+          onEditProperty={this.onEditProperty.bind(this)}
+          onEditRelationshipType={this.onEditRelationshipType.bind(this)}
+          onRemoveProperty={this.onRemoveProperty.bind(this)}
+          onRemoveLabel={this.onRemoveLabel.bind(this)}
         />
+        {this.state.showForm && this.modalForm()}
       </StyledFullSizeContainer>
     )
   }
@@ -251,3 +406,4 @@ export class ExplorerComponent extends Component<any, ExplorerComponentState> {
 export const Explorer = connect((state: GlobalState) => ({
   maxFieldItems: getMaxFieldItems(state)
 }))(ExplorerComponent)
+export const ExplorerComponentWithBus = withBus(ExplorerComponent)

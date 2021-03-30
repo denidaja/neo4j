@@ -124,6 +124,13 @@ export default class Graph {
     return this
   }
 
+  removeRelationship(relationship: any) {
+    this.updateNode(relationship.source)
+    this.updateNode(relationship.target)
+    this._relationships.splice(this._relationships.indexOf(relationship), 1)
+    delete this.relationshipMap[relationship.id]
+  }
+
   removeConnectedRelationships(node: any) {
     for (const r of Array.from(this.findAllRelationshipToNode(node))) {
       this.updateNode(r.source)

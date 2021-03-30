@@ -52,6 +52,16 @@ export const StyledInput = styled.input`
   }
 `
 
+const StyledTextarea = styled.textarea`
+  color: #555;
+  font-size: 14px;
+  padding: 6px 12px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 192px;
+`
+
 export const StyledForm = styled.form`
   width: 100%;
 `
@@ -69,7 +79,6 @@ export const StyledFormElementWrapper = styled.div`
     }
   }
 `
-
 const StyledSettingTextInput = styled(StyledInput)`
   height: 34px;
   color: #555;
@@ -108,6 +117,11 @@ const StyledRadioEntry = styled.div`
 export const TextInput = (props: any) => {
   const { children, ...rest } = props
   return <StyledSettingTextInput {...rest}>{children}</StyledSettingTextInput>
+}
+
+export const Textarea = (props: any) => {
+  const { children, ...rest } = props
+  return <StyledTextarea {...rest}>{children}</StyledTextarea>
 }
 
 export const CheckboxSelector = (props: any) => (

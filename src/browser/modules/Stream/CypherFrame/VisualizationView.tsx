@@ -25,7 +25,7 @@ import { deepEquals } from 'services/utils'
 import * as grassActions from 'shared/modules/grass/grassDuck'
 import bolt from 'services/bolt/bolt'
 import { withBus } from 'react-suber'
-import { ExplorerComponent } from '../../D3Visualization/components/Explorer'
+import { ExplorerComponentWithBus } from '../../D3Visualization/components/Explorer'
 import { StyledVisContainer } from './VisualizationView.styled'
 
 import { CYPHER_REQUEST } from 'shared/modules/cypher/cypherDuck'
@@ -145,9 +145,276 @@ export class Visualization extends Component<any, VisualizationState> {
     })
   }
 
+  deleteItem(item: any) {
+    let query = ''
+
+    if (item.type === 'node') {
+      query = `MATCH (node)
+               WHERE id(node) = ${item.item.id}
+               OPTIONAL MATCH (node)-[rel]-()
+               DELETE node, rel`
+    } else {
+      query = `MATCH ()-[rel]-()
+               WHERE id(rel) = ${item.item.id}
+               DELETE rel`
+    }
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              resolve(item)
+            }
+          }
+        )
+    })
+  }
+
+  addItem() {
+    const query = `CREATE (n:Unlabeled)
+                   RETURN n`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                {}
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
+  setItemProperty(item: any, key: any, value: any) {
+    let query = ''
+
+    if (item.type === 'node') {
+      query = `MATCH (node)
+               WHERE id(node) = ${item.item.id}
+               SET node.\`${key}\` = "${value}"
+               RETURN node`
+    } else {
+      query = `MATCH ()-[rel]-()
+               WHERE id(rel) = ${item.item.id}
+               SET rel.\`${key}\` = "${value}"
+               RETURN rel`
+    }
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                10
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
+  removeItemProperty(item: any, key: any) {
+    let query = ''
+
+    if (item.type === 'node') {
+      query = `MATCH (node)
+               WHERE id(node) = ${item.item.id}
+               REMOVE node.\`${key}\`
+               RETURN node`
+    } else {
+      query = `MATCH ()-[rel]-()
+               WHERE id(rel) = ${item.item.id}
+               REMOVE rel.\`${key}\`
+               RETURN rel`
+    }
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                10
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
+  setRelationshipType(item: any, type: any) {
+    const query = `MATCH (n)-[old]->(m)
+                   WHERE id(old) = ${item.item.id}
+                   CREATE (n)-[new:${type}]->(m)
+                   SET new = old
+                   WITH old, new
+                   DELETE old
+                   RETURN new, old`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                10
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
+  addNodeLabel(item: any, label: any) {
+    const query = `MATCH (node)
+                   WHERE id(node) = ${item.item.id}
+                   SET node:\`${label}\`
+                   RETURN node`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                10
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
+  removeNodeLabel(item: any, label: any) {
+    const query = `MATCH (node)
+                   WHERE id(node) = ${item.item.id}
+                   REMOVE node:\`${label}\`
+                   RETURN node`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                10
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
+  connectItems(source: any, target: any) {
+    const query = `MATCH (source)
+                   MATCH (target)
+                   WHERE id(source) = ${source.item.id} AND id(target) = ${target.item.id}
+                   CREATE (source)-[rel:untyped]->(target)
+                   RETURN source, rel, target`
+
+    return new Promise((resolve, reject) => {
+      this.props.bus &&
+        this.props.bus.self(
+          CYPHER_REQUEST,
+          { query: query },
+          (response: any) => {
+            if (!response.success) {
+              reject(new Error())
+            } else {
+              const resultGraph = bolt.extractNodesAndRelationshipsFromRecordsForOldVis(
+                response.result.records,
+                false,
+                10
+              )
+              this.autoCompleteRelationships(
+                this.graph._nodes,
+                resultGraph.nodes
+              )
+              resolve({ ...resultGraph, count: 1 })
+            }
+          }
+        )
+    })
+  }
+
   getInternalRelationships(existingNodeIds: any, newNodeIds: any) {
-    newNodeIds = newNodeIds.map(neo4j.int)
-    existingNodeIds = existingNodeIds.map(neo4j.int)
+    newNodeIds = newNodeIds.map(bolt.itemIntToNumber)
+    existingNodeIds = existingNodeIds.map(bolt.itemIntToNumber)
     existingNodeIds = existingNodeIds.concat(newNodeIds)
     const query =
       'MATCH (a)-[r]->(b) WHERE id(a) IN $existingNodeIds AND id(b) IN $newNodeIds RETURN r;'
@@ -187,7 +454,7 @@ export class Visualization extends Component<any, VisualizationState> {
 
     return (
       <StyledVisContainer fullscreen={this.props.fullscreen}>
-        <ExplorerComponent
+        <ExplorerComponentWithBus
           maxNeighbours={this.props.maxNeighbours}
           hasTruncatedFields={this.state.hasTruncatedFields}
           initialNodeDisplay={this.props.initialNodeDisplay}
@@ -196,6 +463,14 @@ export class Visualization extends Component<any, VisualizationState> {
           getNeighbours={this.getNeighbours.bind(this)}
           nodes={this.state.nodes}
           relationships={this.state.relationships}
+          deleteItem={this.deleteItem.bind(this)}
+          addItem={this.addItem.bind(this)}
+          setItemProperty={this.setItemProperty.bind(this)}
+          removeItemProperty={this.removeItemProperty.bind(this)}
+          setRelationshipType={this.setRelationshipType.bind(this)}
+          addNodeLabel={this.addNodeLabel.bind(this)}
+          removeNodeLabel={this.removeNodeLabel.bind(this)}
+          connectItems={this.connectItems.bind(this)}
           fullscreen={this.props.fullscreen}
           frameHeight={this.props.frameHeight}
           assignVisElement={this.props.assignVisElement}

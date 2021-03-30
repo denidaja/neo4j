@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { mapNodes, mapRelationships, getGraphStats } from './mapper'
+import { getGraphStats, mapNodes, mapRelationships } from './mapper'
 
 export class GraphEventHandler {
   getNodeNeighbours: any
@@ -74,8 +74,17 @@ export class GraphEventHandler {
   }
 
   nodeClose(d: any) {
+    // use Node instance instead of simplified map
+    if (d.item && this.selectedItem && d.item.id === this.selectedItem.id) {
+      d = this.selectedItem
+    }
+
     this.graph.removeConnectedRelationships(d)
     this.graph.removeNode(d)
+    this.propagateChange()
+  }
+
+  propagateChange() {
     this.deselectItem()
     this.graphView.update()
     this.graphModelChanged()
